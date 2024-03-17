@@ -1,3 +1,5 @@
+using MenuMate.Utilities.Sql;
+
 namespace MenuMate;
 
 public class Program
@@ -12,6 +14,8 @@ public class Program
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+
+        builder.Services.AddSingleton<SqlConnector>();
 
         var app = builder.Build();
 
