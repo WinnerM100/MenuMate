@@ -32,3 +32,9 @@ D:\Test Files and other Files\Files for C# Projects\ASP NET\MenuMate\obj\Debug\n
 D:\Test Files and other Files\Files for C# Projects\ASP NET\MenuMate\obj\Debug\net6.0\ref\MenuMate.dll
 D:\Test Files and other Files\Files for C# Projects\ASP NET\MenuMate\bin\Debug\net6.0\App.config
 D:\Test Files and other Files\Files for C# Projects\ASP NET\MenuMate\bin\Debug\net6.0\MenuMate.dll.config
+D:\Test Files and other Files\Files for C# Projects\ASP NET\MenuMate\bin\Debug\net6.0\System.Data.SqlClient.dll
+D:\Test Files and other Files\Files for C# Projects\ASP NET\MenuMate\bin\Debug\net6.0\runtimes\win-arm64\native\sni.dll
+D:\Test Files and other Files\Files for C# Projects\ASP NET\MenuMate\bin\Debug\net6.0\runtimes\win-x64\native\sni.dll
+D:\Test Files and other Files\Files for C# Projects\ASP NET\MenuMate\bin\Debug\net6.0\runtimes\win-x86\native\sni.dll
+D:\Test Files and other Files\Files for C# Projects\ASP NET\MenuMate\bin\Debug\net6.0\runtimes\unix\lib\netcoreapp2.1\System.Data.SqlClient.dll
+D:\Test Files and other Files\Files for C# Projects\ASP NET\MenuMate\bin\Debug\net6.0\runtimes\win\lib\netcoreapp2.1\System.Data.SqlClient.dll
