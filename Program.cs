@@ -1,3 +1,4 @@
+using MenuMate.Services;
 using MenuMate.Utilities.Sql;
 
 namespace MenuMate;
@@ -16,6 +17,7 @@ public class Program
         builder.Services.AddSwaggerGen();
 
         builder.Services.AddSingleton<SqlConnector>();
+        builder.Services.AddScoped<IClientService,ClientService>();
 
         var app = builder.Build();
 
