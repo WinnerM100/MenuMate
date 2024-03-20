@@ -1,3 +1,4 @@
+using MenuMate.Context;
 using MenuMate.Services;
 using MenuMate.Utilities.Sql;
 
@@ -18,6 +19,7 @@ public class Program
 
         builder.Services.AddSingleton<SqlConnector>();
         builder.Services.AddScoped<IClientService,ClientService>();
+        builder.Services.AddScoped<ClientContext>();
 
         var app = builder.Build();
 

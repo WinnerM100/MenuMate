@@ -1,4 +1,5 @@
 using System.Data.SqlClient;
+using MenuMate.Context;
 using MenuMate.DTOs;
 using MenuMate.Extensions;
 using MenuMate.Models;
@@ -9,13 +10,15 @@ namespace MenuMate.Services;
 class ClientService : IClientService
 {
     SqlConnector connector;
+    ClientContext clientContext;
 
-    public ClientService(SqlConnector newConnector)
+    public ClientService(SqlConnector newConnector, ClientContext newClientContext)
     {
         connector = newConnector;
+        clientContext = newClientContext;
     }
 
-    public ClientDTO CreateNewClient(ClientDTO newClient)
+    public ClientDTO AddClientTest(ClientDTO newClient)
     {
         Client client = newClient.AsClient();
 
@@ -42,5 +45,11 @@ class ClientService : IClientService
         }
 
         return client.AsClientDTO(true);
+    }
+    public ClientDTO AddClient(ClientDTO newClient)
+    {
+        Client client = clientContext.clients.Add(newClient.AsClient());
+
+        return client.AsClientDTO();
     }
 }

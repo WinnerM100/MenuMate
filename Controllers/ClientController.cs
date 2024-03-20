@@ -36,10 +36,10 @@ public class ClientController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult<Client> CreateNewClient([FromBody]ClientDTO newClient)
+    public ActionResult<ClientDTO> CreateNewClient([FromBody]ClientDTO newClient)
     {
-        var result = clientService.CreateNewClient(newClient);
+        var result = clientService.AddClient(newClient);
 
-        return result.AsClient();
+        return result;
     }
 }

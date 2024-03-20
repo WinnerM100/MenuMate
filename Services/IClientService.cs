@@ -4,5 +4,5 @@ namespace MenuMate.Services;
 
 public interface IClientService
 {
-    public ClientDTO CreateNewClient(ClientDTO newClient);
+    public ClientDTO AddClient(ClientDTO newClient);
 }
