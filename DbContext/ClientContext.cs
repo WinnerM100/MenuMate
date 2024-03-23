@@ -19,5 +19,6 @@ class ClientContext : DbContext
     protected override void OnModelCreating(DbModelBuilder modelBuilder)
     {
         modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
+        modelBuilder.Entity<Client>().ToTable("Client");
     }
 }

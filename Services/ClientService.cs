@@ -50,6 +50,8 @@ class ClientService : IClientService
     {
         Client client = clientContext.clients.Add(newClient.AsClient());
 
+        clientContext.SaveChanges();
+
         return client.AsClientDTO();
     }
 }
