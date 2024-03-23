@@ -11,6 +11,7 @@
           "EntityFramework": "6.4.4",
           "Microsoft.EntityFrameworkCore.Tools": "7.0.0",
           "Swashbuckle.AspNetCore": "6.2.3",
+          "System.Configuration.ConfigurationManager": "4.7.0",
           "System.Data.SqlClient": "4.8.6"
         },
         "runtime": {
