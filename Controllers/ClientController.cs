@@ -42,4 +42,12 @@ public class ClientController : ControllerBase
 
         return result;
     }
+
+    [HttpPut]
+    public ActionResult<ClientDTO> UpdateClient([FromBody]ClientDTO clientToUpdate)
+    {
+        var result = clientService.UpdateClient(clientToUpdate);
+
+        return result;
+    }
 }
