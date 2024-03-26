@@ -1,4 +1,5 @@
 using System.Data.SqlClient;
+using MenuMate.DAOs;
 using MenuMate.DTOs;
 using MenuMate.Extensions;
 using MenuMate.Models;
@@ -21,22 +22,8 @@ public class ClientController : ControllerBase
         clientService = newClientService;
     }
 
-    [HttpGet]
-    public ActionResult<string> Test()
-    {
-        Client newClient = new Client{
-            Email = "cascascascas",
-            Password = "cascascascasc",
-            Nume = "Croitorescu",
-            Prenume = "Madalin"
-        };
-
-
-        return $"Hello, World!${newClient}";
-    }
-
     [HttpPost]
-    public ActionResult<ClientDTO> CreateNewClient([FromBody]ClientDTO newClient)
+    public ActionResult<ClientDTO> CreateNewClient([FromBody]ClientDAO newClient)
     {
         var result = clientService.AddClient(newClient);
 
@@ -44,10 +31,66 @@ public class ClientController : ControllerBase
     }
 
     [HttpPut]
-    public ActionResult<ClientDTO> UpdateClient([FromBody]ClientDTO clientToUpdate)
+    public ActionResult<ClientDTO> UpdateClient([FromBody]ClientDAO clientToUpdate)
     {
         var result = clientService.UpdateClient(clientToUpdate);
 
         return result;
+    }
+
+    [HttpGet]
+    [Route("/{id}")]
+    public ActionResult<ClientDTO> GetClientById(Guid id)
+    {
+        var result = clientService.GetClientById(id);
+
+        return result;
+    }
+
+    [HttpGet]
+    [Route("/search")]
+    public ActionResult<IEnumerable<ClientDTO>> GetClientByNumePrenume([FromQuery(Name = "nume")]string nume="", [FromQuery(Name = "prenume")]string prenume="")
+    {
+        try
+        {
+            var result = clientService.GetClientByNumePrenume(nume, prenume);
+
+            return Ok(result);
+        }
+        catch(Exception ex)
+        {
+            return BadRequest($"Exception executing method {nameof(GetClientByNumePrenume)}: {ex.Message}\n{ex.InnerException}");
+        }
+    }
+
+    [HttpDelete]
+    [Route("/{id}")]
+    public ActionResult<ClientDTO> DeleteClientById(Guid id)
+    {
+        var result = clientService.DeleteClientById(id);
+
+        return result;
+    }
+
+    [HttpDelete]
+    public ActionResult<IEnumerable<ClientDTO>> DeleteClientByNumePrenume([FromQuery(Name = "nume")]string nume="", [FromQuery(Name = "prenume")]string prenume="")
+    {
+        try
+        {
+            var result = clientService.DeleteClientByNumePrenume(nume, prenume);
+
+            return Ok(result);
+        }
+        catch(Exception ex)
+        {
+            return BadRequest($"Exception executing method {nameof(GetClientByNumePrenume)}: {ex.Message}\n{ex.InnerException}");
+        }
+    }
+
+    [HttpGet]
+    [Route("/all")]
+    public ActionResult<IEnumerable<ClientDTO>> GetAllClients()
+    {
+        return Ok(clientService.GetAllClients(true));
     }
 }

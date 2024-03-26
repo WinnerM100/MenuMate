@@ -14,4 +14,9 @@ public record ClientDTO
     {
         Id = Guid.NewGuid();
     }
+
+    public override string ToString()
+    {
+        return $"Client {Id}[Email: '{Email}', Password (Encrypted): '{Password}', Nume: '{Nume}', Prenume: '{Prenume}']";
+    }
 }
