@@ -1,3 +1,5 @@
+using System.Configuration;
+using MenuMate.Context;
 using MenuMate.Services;
 using MenuMate.Utilities.Sql;
 
@@ -11,6 +13,8 @@ public class Program
 
         // Add services to the container.
 
+        ExeConfigurationFileMap exeConfigurationFileMap = new ExeConfigurationFileMap();
+
         builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
@@ -18,6 +22,7 @@ public class Program
 
         builder.Services.AddSingleton<SqlConnector>();
         builder.Services.AddScoped<IClientService,ClientService>();
+        builder.Services.AddScoped<ClientContext>();
 
         var app = builder.Build();
 

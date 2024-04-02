@@ -1,4 +1,9 @@
+using System.Data.Entity.Migrations;
 using System.Data.SqlClient;
+using System.Linq.Expressions;
+using MenuMate.Constants.Exceptions;
+using MenuMate.Context;
+using MenuMate.DAOs;
 using MenuMate.DTOs;
 using MenuMate.Extensions;
 using MenuMate.Models;
@@ -9,13 +14,15 @@ namespace MenuMate.Services;
 class ClientService : IClientService
 {
     SqlConnector connector;
+    ClientContext clientContext;
 
-    public ClientService(SqlConnector newConnector)
+    public ClientService(SqlConnector newConnector, ClientContext newClientContext)
     {
         connector = newConnector;
+        clientContext = newClientContext;
     }
 
-    public ClientDTO CreateNewClient(ClientDTO newClient)
+    public ClientDTO AddClientTest(ClientDTO newClient)
     {
         Client client = newClient.AsClient();
 
@@ -42,5 +49,115 @@ class ClientService : IClientService
         }
 
         return client.AsClientDTO(true);
+    }
+    public ClientDTO AddClient(ClientDAO newClient)
+    {
+        Client client = clientContext.clients.Add(new Client(newClient));
+        
+        clientContext.SaveChanges();
+
+        return client.AsClientDTO();
+    }
+
+    public ClientDTO UpdateClient(ClientDAO clientToUpdate)
+    {
+        if(clientToUpdate.Id == null || clientToUpdate.Id == Guid.Empty)
+        {
+            throw new InvalidClientDataException("Id");
+        }
+
+        Client? targetClient;
+        if(clientToUpdate.Id != Guid.Empty)
+        {
+            targetClient = clientContext.clients.SingleOrDefault(client => client.Id == clientToUpdate.Id);
+        }
+        else
+        {
+            targetClient = clientContext.clients.SingleOrDefault(client => client.Id == clientToUpdate.Id);
+        }
+
+        if(null == targetClient)
+        {
+            throw new NotFoundException("client", clientToUpdate.ToString());
+        }
+
+        targetClient = targetClient with
+        {
+            Email = !string.IsNullOrWhiteSpace(clientToUpdate.Email)? clientToUpdate.Email : targetClient.Email,
+            Password = !string.IsNullOrWhiteSpace(clientToUpdate.Password)? clientToUpdate.Password : targetClient.Password,
+            Nume = !string.IsNullOrWhiteSpace(clientToUpdate.Nume)? clientToUpdate.Nume : targetClient.Nume,
+            Prenume = !string.IsNullOrWhiteSpace(clientToUpdate.Prenume)? clientToUpdate.Prenume : targetClient.Prenume,
+        };
+
+        clientContext.clients.AddOrUpdate<Client>(targetClient);
+
+        clientContext.SaveChanges();
+
+        return targetClient.AsClientDTO();
+    }
+
+    public ClientDTO GetClientById(Guid Id, bool encapsulateIdInResponse = false)
+    {
+        if(Id == Guid.Empty)
+        {
+            throw new InvalidInputException("Id");
+        }
+
+        Client? target = clientContext.clients.AsNoTracking().FirstOrDefault(client => client.Id == Id);
+
+        if(target == null)
+        {
+            throw new NotFoundException("client", $"Id = '{Id}'");
+        }
+
+        return target.AsClientDTO(encapsulateIdInResponse);
+    }
+
+    public IEnumerable<ClientDTO> GetClientByNumePrenume(string nume, string prenume, bool encapsulateId = false)
+    {
+        if(String.IsNullOrWhiteSpace(nume) && String.IsNullOrWhiteSpace(prenume))
+        {
+            throw new InvalidInputException("nume, prenume");
+        }
+
+        IEnumerable<Client> foundClients = from client in clientContext.clients.AsNoTracking()
+                                           where (client.Nume+client.Prenume).Equals(nume+prenume)
+                                           select client;
+
+        if(foundClients == null || foundClients.Count() <= 0)
+        {
+            throw new NotFoundException("client", $"nume = '{nume}', prenume = '{prenume}'");
+        }
+
+        return foundClients.Select(client => client.AsClientDTO(encapsulateId));
+    }
+
+    public ClientDTO DeleteClientById(Guid Id)
+    {
+        Client? target = GetClientById(Id, true).AsClient();
+
+        //clientContext.clients.Remove(target);
+        clientContext.Entry<Client>(target).State = System.Data.Entity.EntityState.Deleted;
+        clientContext.SaveChanges();
+
+        return target.AsClientDTO();
+    }
+
+    public IEnumerable<ClientDTO> DeleteClientByNumePrenume(string nume, string prenume)
+    {
+        IEnumerable<ClientDTO> targetClients = GetClientByNumePrenume(nume, prenume, true);
+
+        foreach(ClientDTO client in targetClients)
+        {
+            clientContext.Entry<Client>(client.AsClient()).State = System.Data.Entity.EntityState.Deleted;
+        }
+        clientContext.SaveChanges();
+        return targetClients;
+    }
+
+    public IEnumerable<ClientDTO> GetAllClients(bool sendId)
+    {
+        var clients = clientContext.clients.AsNoTracking().ToList();
+        return clients.Select(c => c.AsClientDTO(sendId));
     }
 }
