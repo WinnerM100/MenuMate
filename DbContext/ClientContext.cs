@@ -20,5 +20,9 @@ class ClientContext : DbContext
     {
         modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
         modelBuilder.Entity<Client>().ToTable("Client");
+        modelBuilder.Entity<Client>().HasKey(c => c.Id);
+        modelBuilder.Entity<Client>()
+                    .HasRequired(c => c.User)
+                    .WithRequiredPrincipal(u => u.client);
     }
 }

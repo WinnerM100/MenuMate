@@ -1,12 +1,14 @@
 using System.Data.Entity.Migrations;
 using System.Data.SqlClient;
 using System.Linq.Expressions;
+using MenuMate.Caching;
 using MenuMate.Constants.Exceptions;
 using MenuMate.Context;
 using MenuMate.DAOs;
 using MenuMate.DTOs;
 using MenuMate.Extensions;
 using MenuMate.Models;
+using MenuMate.Utilities;
 using MenuMate.Utilities.Sql;
 
 namespace MenuMate.Services;
@@ -16,10 +18,18 @@ class ClientService : IClientService
     SqlConnector connector;
     ClientContext clientContext;
 
-    public ClientService(SqlConnector newConnector, ClientContext newClientContext)
+    RolesSettings rolesSettings;
+    RoleCache roleCache;
+
+    AuthContext authContext;
+
+    public ClientService(SqlConnector newConnector, ClientContext newClientContext, AuthContext authContext, RolesSettings rolesSettings, RoleCache roleCache)
     {
         connector = newConnector;
         clientContext = newClientContext;
+        this.authContext = authContext;
+        this.rolesSettings = rolesSettings;
+        this.roleCache = roleCache;
     }
 
     public ClientDTO AddClientTest(ClientDTO newClient)
@@ -52,8 +62,10 @@ class ClientService : IClientService
     }
     public ClientDTO AddClient(ClientDAO newClient)
     {
-        Client client = clientContext.clients.Add(new Client(newClient));
-        
+        Role role = roleCache.GetRole(rolesSettings.GetRoleByKey("CLIENT").Value);
+
+        Client client = clientContext.clients.Add(new Client(newClient, role));
+
         clientContext.SaveChanges();
 
         return client.AsClientDTO();

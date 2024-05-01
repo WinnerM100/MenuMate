@@ -13,6 +13,8 @@ public static class ClientExtenstions
 
     public static Client AsClient(this ClientDAO clientDAO)
     {
+#pragma warning disable CS8601 // Possible null reference assignment.
+#pragma warning disable CS8601 // Possible null reference assignment.
         return new Client() with
         {
             Email = clientDAO.Email,
@@ -20,5 +22,7 @@ public static class ClientExtenstions
             Prenume = clientDAO.Prenume,
             Password = clientDAO.Password
         };
+#pragma warning restore CS8601 // Possible null reference assignment.
+#pragma warning restore CS8601 // Possible null reference assignment.
     }
 }
