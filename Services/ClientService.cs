@@ -1,13 +1,16 @@
 using System.Data.Entity.Migrations;
 using System.Data.SqlClient;
 using System.Linq.Expressions;
+using MenuMate.Caching;
 using MenuMate.Constants.Exceptions;
 using MenuMate.Context;
 using MenuMate.DAOs;
 using MenuMate.DTOs;
 using MenuMate.Extensions;
 using MenuMate.Models;
+using MenuMate.Utilities;
 using MenuMate.Utilities.Sql;
+using Microsoft.EntityFrameworkCore;
 
 namespace MenuMate.Services;
 
@@ -16,10 +19,15 @@ class ClientService : IClientService
     SqlConnector connector;
     ClientContext clientContext;
 
-    public ClientService(SqlConnector newConnector, ClientContext newClientContext)
+    RolesSettings rolesSettings;
+    RoleCache roleCache;
+
+    public ClientService(SqlConnector newConnector, ClientContext newClientContext, RolesSettings rolesSettings, RoleCache roleCache)
     {
         connector = newConnector;
         clientContext = newClientContext;
+        this.rolesSettings = rolesSettings;
+        this.roleCache = roleCache;
     }
 
     public ClientDTO AddClientTest(ClientDTO newClient)
@@ -52,11 +60,34 @@ class ClientService : IClientService
     }
     public ClientDTO AddClient(ClientDAO newClient)
     {
-        Client client = clientContext.clients.Add(new Client(newClient));
+        Role role = roleCache.GetRole(rolesSettings.GetRoleByKey("CLIENT").Name);
+
+        User createdUser = new User()
+        {
+            Email = newClient.Email,
+            Password = newClient.Password
+        };
+
+        UsersRoles newUsersRoles = new UsersRoles
+        {
+            Role = role,
+            RoleId = role.Id,
+            User = createdUser,
+            UserId = createdUser.Id
+        };
         
+        createdUser.UsersRoles.Add(newUsersRoles);
+
+        clientContext.usersRoles.Add(newUsersRoles);
+
+        clientContext.users.Add(createdUser);
+
+
+        Client addedClient = new Client(newClient, createdUser);
+        clientContext.clients.Add(addedClient);
         clientContext.SaveChanges();
 
-        return client.AsClientDTO();
+        return addedClient.AsClientDTO(true);
     }
 
     public ClientDTO UpdateClient(ClientDAO clientToUpdate)
@@ -69,11 +100,11 @@ class ClientService : IClientService
         Client? targetClient;
         if(clientToUpdate.Id != Guid.Empty)
         {
-            targetClient = clientContext.clients.SingleOrDefault(client => client.Id == clientToUpdate.Id);
+            targetClient = clientContext.clients.AsNoTracking().SingleOrDefault(client => client.Id == clientToUpdate.Id);
         }
         else
         {
-            targetClient = clientContext.clients.SingleOrDefault(client => client.Id == clientToUpdate.Id);
+            targetClient = clientContext.clients.AsNoTracking().SingleOrDefault(client => client.Id == clientToUpdate.Id);
         }
 
         if(null == targetClient)
@@ -89,7 +120,7 @@ class ClientService : IClientService
             Prenume = !string.IsNullOrWhiteSpace(clientToUpdate.Prenume)? clientToUpdate.Prenume : targetClient.Prenume,
         };
 
-        clientContext.clients.AddOrUpdate<Client>(targetClient);
+        clientContext.clients.Update(targetClient);
 
         clientContext.SaveChanges();
 
@@ -137,7 +168,8 @@ class ClientService : IClientService
         Client? target = GetClientById(Id, true).AsClient();
 
         //clientContext.clients.Remove(target);
-        clientContext.Entry<Client>(target).State = System.Data.Entity.EntityState.Deleted;
+        clientContext.clients.Entry(target).State = EntityState.Deleted;
+        clientContext.Remove(target);
         clientContext.SaveChanges();
 
         return target.AsClientDTO();
@@ -149,7 +181,10 @@ class ClientService : IClientService
 
         foreach(ClientDTO client in targetClients)
         {
-            clientContext.Entry<Client>(client.AsClient()).State = System.Data.Entity.EntityState.Deleted;
+            if(client.Id != Guid.Empty)
+            {
+                ClientDTO target = DeleteClientById(client.Id);
+            }
         }
         clientContext.SaveChanges();
         return targetClients;
