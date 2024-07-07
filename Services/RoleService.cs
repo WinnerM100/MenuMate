@@ -10,20 +10,20 @@ public class RoleService : IRoleService
 {
     SqlConnector sqlConnector;
 
-    AuthContext authContext; 
+    ClientContext context; 
 
     private readonly IServiceProvider serviceProvider;
 
     public static IEnumerable<Role> Roles { get; set; }
 
-    public RoleService(SqlConnector sqlConnector, AuthContext authContext)
+    public RoleService(SqlConnector sqlConnector, ClientContext context)
     {
         this.sqlConnector = sqlConnector;
-        this.authContext = authContext;
+        this.context = context;
     }
 
     public IEnumerable<Role> GetRoles()
     {
-       return authContext.roles.ToList();
+       return context.roles.ToList();
     }
 }

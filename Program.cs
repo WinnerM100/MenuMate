@@ -6,6 +6,7 @@ using MenuMate.Services;
 using MenuMate.Utilities;
 using MenuMate.Utilities.Sql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace MenuMate;
@@ -18,15 +19,15 @@ public class Program
 
         // Add services to the container.
 
-        ExeConfigurationFileMap exeConfigurationFileMap = new ExeConfigurationFileMap();
-
         builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
-        
-        builder.Services.AddSingleton<AuthContext>();
+        builder.Services.AddDbContext<ClientContext>(options =>
+        {
+            options.UseSqlServer(builder.Configuration.GetSection("ConnectionStrings").GetSection("MenuMateDB").Get<string>());
+        });
         builder.Services.AddSingleton<ClientContext>();
 
         builder.Services.AddSingleton<SqlConnector>();

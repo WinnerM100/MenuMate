@@ -7,12 +7,12 @@ namespace MenuMate.Services;
 public class UserService : IUserService
 {
     SqlConnector connector;
-    AuthContext authContext;
+    ClientContext context;
 
-    public UserService(SqlConnector newConnector, AuthContext newAuthContext)
+    public UserService(SqlConnector newConnector, ClientContext newContext)
     {
         connector = newConnector;
-        authContext = newAuthContext;
+        context = newContext;
     }
 
     public User GetUser(UserDAO loginUser)
