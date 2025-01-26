@@ -1,5 +1,8 @@
 using System.Configuration;
 using System.Text;
+using MenuMate.AccessLayer.Context;
+using MenuMate.AccessLayer.Models;
+using MenuMate.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -15,6 +18,12 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
+
+        builder.Services.AddDbContext<MenuMateContext>();
+
+        builder.Services.AddSingleton<SqlConnector>();
+
+        builder.Services.AddScoped<IClientService, ClientService>();
 
         builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
