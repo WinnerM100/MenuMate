@@ -1,6 +1,6 @@
 namespace MenuMate.Models;
 
-public class UserDAO
+public record UserDAO
 {
     public Guid Id { get; set; }
     public string Email { get; set; }

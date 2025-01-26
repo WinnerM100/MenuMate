@@ -5,51 +5,41 @@ using System.Web;
 using System.Text;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
- 
+using Microsoft.IdentityModel.Tokens;
+
 namespace MenuMate.Utilities
 {
     public class SaltHash
     {
-        public static string ComputeHash(string plainText, string hashAlgorithm, byte[] saltBytes)
+        public static string ComputeHash(string plainText, string hashAlgorithm, byte[]? saltBytes = null)
         {
             // If salt is not specified, generate it.
-            if (saltBytes == null)
-            {
-                // Define min and max salt sizes.
-                int minSaltSize = 8;
-                int maxSaltSize = 16;
- 
-                // Generate a random number for the size of the salt.
-                Random random = new Random();
-                int saltSize = random.Next(minSaltSize, maxSaltSize);
- 
-                // Allocate a byte array, which will hold the salt.
-                saltBytes = new byte[saltSize];
- 
-                // Fill the salt with cryptographically strong byte values.
-                
-                RandomNumberGenerator.Fill(saltBytes);
-            }
  
             // Convert plain text into a byte array.
             byte[] plainTextBytes = Encoding.UTF8.GetBytes(plainText);
- 
+            byte[] plainTextWithSaltBytes;
+
+            if (saltBytes != null && saltBytes.Length > 0)
+            {
+                plainTextWithSaltBytes = new byte[plainTextBytes.Length + saltBytes.Length];
+                for (int i = 0; i < saltBytes.Length; i++)
+                plainTextWithSaltBytes[plainTextBytes.Length + i] = saltBytes[i];
+            }
+            else plainTextWithSaltBytes = new byte[plainTextBytes.Length];
             // Allocate array, which will hold plain text and salt.
-            byte[] plainTextWithSaltBytes =
-            new byte[plainTextBytes.Length + saltBytes.Length];
  
             // Copy plain text bytes into resulting array.
             for (int i = 0; i < plainTextBytes.Length; i++)
                 plainTextWithSaltBytes[i] = plainTextBytes[i];
  
             // Append salt bytes to the resulting array.
-            for (int i = 0; i < saltBytes.Length; i++)
-                plainTextWithSaltBytes[plainTextBytes.Length + i] = saltBytes[i];
+            
  
-            HashAlgorithm hash;
+            HashAlgorithm? hash;
  
             // Initialize appropriate hashing algorithm class.
-            hash = HashAlgorithm.Create(string.IsNullOrEmpty(hashAlgorithm.ToUpper())?"MD5":hashAlgorithm.ToUpper());
+            string upperHashAlg = hashAlgorithm.ToUpper();
+            hash = HashAlgorithm.Create(upperHashAlg);
             
             if(hash == null)
             {
@@ -58,26 +48,31 @@ namespace MenuMate.Utilities
 
             // Compute hash value of our plain text with appended salt.
             byte[] hashBytes = hash.ComputeHash(plainTextWithSaltBytes);
- 
+
             // Create array which will hold hash and original salt bytes.
-            byte[] hashWithSaltBytes = new byte[hashBytes.Length +
-            saltBytes.Length];
+            byte[] hashWithSaltBytes;
+            if (saltBytes != null && saltBytes.Length > 0)
+            {
+                hashWithSaltBytes = new byte[hashBytes.Length + saltBytes.Length];
+                
+                // Append salt bytes to the result.
+                for (int i = 0; i < saltBytes.Length; i++)
+                hashWithSaltBytes[hashBytes.Length + i] = saltBytes[i];
+ 
+            }
+            else hashWithSaltBytes = new byte[hashBytes.Length];
  
             // Copy hash bytes into resulting array.
             for (int i = 0; i < hashBytes.Length; i++)
                 hashWithSaltBytes[i] = hashBytes[i];
  
-            // Append salt bytes to the result.
-            for (int i = 0; i < saltBytes.Length; i++)
-                hashWithSaltBytes[hashBytes.Length + i] = saltBytes[i];
- 
+            
             // Convert result into a base64-encoded string.
             string hashValue = Convert.ToBase64String(hashWithSaltBytes);
  
             // Return the result.
             return hashValue;
         }
- 
         public static bool VerifyHash(string plainText, string hashAlgorithm, string hashValue)
         {
  
@@ -101,6 +96,11 @@ namespace MenuMate.Utilities
  
                 case "SHA512":
                     hashSizeInBits = 512;
+                    break;
+                
+                case "HS256":
+                case "HMACSHA256":
+                    hashSizeInBits = 256;
                     break;
  
                 default: // Must be MD5
@@ -128,6 +128,24 @@ namespace MenuMate.Utilities
             // If the computed hash matches the specified hash,
             // the plain text value must be correct.
             return (hashValue == expectedHashString);
+        }
+
+        public static string GetAlgorithmSignature(string hashAlgorithm)
+        {
+            switch(hashAlgorithm.ToUpper())
+            {
+                case "SHA384":
+                    return SecurityAlgorithms.RsaSha384;
+ 
+                case "SHA512":
+                    return SecurityAlgorithms.RsaSha512;
+                
+                case "HMACSHA256":
+                    return SecurityAlgorithms.HmacSha256;
+ 
+                default: // Must be MD5
+                    return "";
+            }
         }
     }
 }

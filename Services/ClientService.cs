@@ -21,13 +21,17 @@ class ClientService : IClientService
 
     RolesSettings rolesSettings;
     RoleCache roleCache;
+    private readonly IUserService userService;
+    private readonly IConfiguration configuration;
 
-    public ClientService(SqlConnector newConnector, ClientContext newClientContext, RolesSettings rolesSettings, RoleCache roleCache)
+    public ClientService(SqlConnector newConnector, ClientContext newClientContext, RolesSettings rolesSettings, RoleCache roleCache, IUserService userService, IConfiguration configuration)
     {
         connector = newConnector;
         clientContext = newClientContext;
         this.rolesSettings = rolesSettings;
         this.roleCache = roleCache;
+        this.userService = userService;
+        this.configuration = configuration;
     }
 
     public ClientDTO AddClientTest(ClientDTO newClient)
@@ -62,50 +66,49 @@ class ClientService : IClientService
     {
         Role role = roleCache.GetRole(rolesSettings.GetRoleByKey("CLIENT").Name);
 
+        string hashedPassword = SaltHash.ComputeHash(newClient.Password, configuration.GetSection("Security").GetValue<string>("HashAlgorithm"));
+
         User createdUser = new User()
         {
             Email = newClient.Email,
-            Password = newClient.Password
+            Password = hashedPassword
         };
 
-        UsersRoles newUsersRoles = new UsersRoles
-        {
-            Role = role,
-            RoleId = role.Id,
-            User = createdUser,
-            UserId = createdUser.Id
-        };
+
+        //userService.CreateUser(createdUser.AsUserDTO(), role);
         
-        createdUser.UsersRoles.Add(newUsersRoles);
+        createdUser.Roles.Add(role);
 
-        clientContext.usersRoles.Add(newUsersRoles);
-
-        clientContext.users.Add(createdUser);
-
-
-        Client addedClient = new Client(newClient, createdUser);
+        Client addedClient = new Client(newClient with
+                            {
+                                Password = hashedPassword
+                            }, createdUser);
+                            
         clientContext.clients.Add(addedClient);
         clientContext.SaveChanges();
 
         return addedClient.AsClientDTO(true);
     }
-
+    private bool CompareClientAgainstRequest(Client client, ClientDAO request)
+    {
+        if (client == null || request == null)
+            return false;
+        if(client.Id != request.Id)
+            return false;
+        if(!string.IsNullOrEmpty(request.Email) && !request.Email.Equals(client.Email))
+            return false;
+        if(!string.IsNullOrEmpty(request.Password) && !request.Password.Equals(client.Password))
+            return false;
+        if(!string.IsNullOrEmpty(request.Nume) && !request.Nume.Equals(client.Nume))
+            return false;
+        if(!string.IsNullOrEmpty(request.Prenume) && !request.Prenume.Equals(client.Prenume))
+            return false;
+        return true;
+    }
     public ClientDTO UpdateClient(ClientDAO clientToUpdate)
     {
-        if(clientToUpdate.Id == null || clientToUpdate.Id == Guid.Empty)
-        {
-            throw new InvalidClientDataException("Id");
-        }
-
         Client? targetClient;
-        if(clientToUpdate.Id != Guid.Empty)
-        {
-            targetClient = clientContext.clients.AsNoTracking().SingleOrDefault(client => client.Id == clientToUpdate.Id);
-        }
-        else
-        {
-            targetClient = clientContext.clients.AsNoTracking().SingleOrDefault(client => client.Id == clientToUpdate.Id);
-        }
+        targetClient = clientContext.clients.SingleOrDefault(client => CompareClientAgainstRequest(client, clientToUpdate)) ;
 
         if(null == targetClient)
         {

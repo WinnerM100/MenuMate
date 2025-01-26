@@ -5,8 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace MenuMate.Controllers.Authentication
 {
     [ApiController]
-    [Route("/")]
-    class AuthController : ControllerBase
+    [Route("/admin")]
+    public class AuthController : ControllerBase
     {
         [HttpGet("/secret")]
         [Authorize(Roles = "admin")]

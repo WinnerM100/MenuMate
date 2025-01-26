@@ -1,26 +1,18 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace MenuMate.Models;
+namespace MenuMate.DTOs;
 
-public record User
+public class UserDTO
 {   
     [Key]
     [Column("Id")]
     public Guid Id { get; set; }
     public string Email { get; set; }
-
     public string Password { get; set; }
-    
-    public ICollection<Role> Roles{ get; private set; } = new List<Role>();
 
-    public User()
+    public UserDTO()
     {
         Id = Guid.NewGuid();
-    }
-    public User(IEnumerable<Role> roles)
-    {
-        Id = Guid.NewGuid();
-        Roles = roles.ToList();
     }
 }

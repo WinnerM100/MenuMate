@@ -13,7 +13,6 @@ public class ClientContext : Microsoft.EntityFrameworkCore.DbContext
     public Microsoft.EntityFrameworkCore.DbSet<Client> clients { get; set; }
     public Microsoft.EntityFrameworkCore.DbSet<User> users { get; set; }
     public Microsoft.EntityFrameworkCore.DbSet<Role> roles { get; set; }
-    public Microsoft.EntityFrameworkCore.DbSet<UsersRoles> usersRoles{ get; set; }
 
 
     public ClientContext(SqlConnector newConnector) : base()
@@ -24,6 +23,7 @@ public class ClientContext : Microsoft.EntityFrameworkCore.DbContext
     {   
         optionsBuilder.UseSqlServer(connector.DbConnection.ConnectionString);
         optionsBuilder.EnableSensitiveDataLogging();
+        optionsBuilder.LogTo(Console.WriteLine, LogLevel.Information);
         base.OnConfiguring(optionsBuilder);
     }
 
@@ -35,19 +35,14 @@ public class ClientContext : Microsoft.EntityFrameworkCore.DbContext
 
         modelBuilder.Entity<Client>().HasKey(c => c.Id);
         modelBuilder.Entity<Client>()
-                    .HasOne(c => c.User)
-                    .WithOne(u => u.Client)
-                    .HasForeignKey<User>(u => u.ClientId)
-                    .IsRequired();
+                    .HasOne(c => c.User);
+                    //.WithOne(u => u.Client)
+                    //.HasForeignKey<User>(u => u.ClientId)
+                    //.IsRequired();
 
-        modelBuilder.Entity<UsersRoles>()
-                    .HasOne(ur => ur.User)
-                    .WithMany(u => u.UsersRoles)
-                    .HasForeignKey(ur => ur.UserId);
-
-        modelBuilder.Entity<UsersRoles>()
-                    .HasOne(ur => ur.Role)
-                    .WithMany(r => r.UsersRoles)
-                    .HasForeignKey(ur => ur.RoleId);
+        modelBuilder.Entity<User>()
+                    .HasMany(u => u.Roles)
+                    .WithMany(r => r.Users)
+                    .UsingEntity("dbo.RoleUser");
     }
 }
