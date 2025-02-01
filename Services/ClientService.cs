@@ -1,5 +1,6 @@
 
 
+using System.Data.Entity;
 using MenuMate.AccessLayer.Context;
 using MenuMate.Extensions;
 using MenuMate.Models;
@@ -28,7 +29,7 @@ public class ClientService : IClientService
 
     public ClientDAO? DeleteClient(ClientDTO clientDetails)
     {
-        Client toBeDeletedClient = GetClientByDetails(clientDetails)?.ToClient(false) ?? null;
+        Client toBeDeletedClient = GetClientByDetails(clientDetails) ?? null;
 
         if (null == toBeDeletedClient)
         {
@@ -41,26 +42,26 @@ public class ClientService : IClientService
         return toBeDeletedClient.ToClientDAO();
     }
 
-    public IEnumerable<ClientDAO> GetAllClients()
+    public IEnumerable<Client> GetAllClients()
     {
-        return dbContext.Clients.Select(c => c.ToClientDAO(true)).ToList();
+        return dbContext.Clients.Select(c => c).ToList();
     }
 
-    public ClientDAO GetClientById(Guid clientID)
+    public Client GetClientById(Guid clientID)
     {
-        Client targetClient = dbContext.Clients.FirstOrDefault(c => c.Id == clientID);
+        Client targetClient = dbContext.Clients.AsNoTracking().FirstOrDefault(c => c.Id == clientID);
         
-        return targetClient?.ToClientDAO(false) ?? null;
+        return targetClient ?? null;
     }
 
-    public ClientDAO? GetClientByDetails(ClientDTO clientDetails)
+    public Client GetClientByDetails(ClientDTO clientDetails)
     {
-        Client targetClient = dbContext.Clients.FirstOrDefault(c =>
+        Client targetClient = dbContext.Clients.AsNoTracking().FirstOrDefault(c =>
             (clientDetails.Id == null || clientDetails.Id.Equals(Guid.Empty) || clientDetails.Id == c.Id) &&
             clientDetails.Name.ToLower().Equals(c.Name.ToLower()) &&
             clientDetails.Prenume.ToLower().Equals(c.Prenume.ToLower()));
         
-        return targetClient?.ToClientDAO(false) ?? null;
+        return targetClient ?? null;
     }
 
     public ClientDAO GetClientByNameAndPrenume(string name, string prenume)
@@ -68,24 +69,22 @@ public class ClientService : IClientService
         throw new NotImplementedException();
     }
 
-    public ClientDAO? UpdateClient(ClientDTO clientDetails)
+    public Client? UpdateClient(ClientDTO clientDetails)
     {
-        Client clientToBeUpdated = GetClientById(clientDetails.Id ?? Guid.Empty)?.ToClient(false) ?? null;
+        Client clientToBeUpdated = GetClientById(clientDetails.Id ?? Guid.Empty) ?? null;
 
         if(clientToBeUpdated == null)
         {
             return null;
         }
 
-        dbContext.Clients.Update(new Client()
-        {
-            Id = clientToBeUpdated.Id,
-            Name = clientDetails.Name,
-            Prenume = clientDetails.Prenume
-        });
+        clientToBeUpdated.Name = clientDetails.Name;
+        clientToBeUpdated.Prenume = clientDetails.Prenume;
+
+        dbContext.Clients.Update(clientToBeUpdated);
 
         dbContext.SaveChangesAsync();
 
-        return clientToBeUpdated.ToClientDAO();
+        return clientToBeUpdated;
     }
 }

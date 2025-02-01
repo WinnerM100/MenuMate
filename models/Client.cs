@@ -9,6 +9,8 @@ namespace MenuMate.Models
         public string Name { get; set; }
         public string Prenume { get; set; }
 
+        public User? User{ get; set; }
+
         public override string ToString()
         {
             return $"Client[Id:'{Id}', Name: '{Name}', Prenume: '{Prenume}']";

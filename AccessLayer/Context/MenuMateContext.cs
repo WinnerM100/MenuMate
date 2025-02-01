@@ -7,6 +7,7 @@ namespace MenuMate.AccessLayer.Context;
 public class MenuMateContext : DbContext
 {
     public DbSet<Client> Clients{ get; set; }
+    public DbSet<User> Users{ get; set; }
 
     private SqlConnector sqlConnector{ get; set; }
 
@@ -26,5 +27,6 @@ public class MenuMateContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Client>().ToTable("client");
+        modelBuilder.Entity<User>().ToTable("user");
     }
 }

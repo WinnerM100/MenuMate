@@ -52,17 +52,18 @@ public class ClientController : ControllerBase
         return Ok(toBeDeletedClient);
     }
 
-    [HttpPut]
-    [Route("/{id}")]
-    public ActionResult<ClientDAO> UpdateClient(ClientDTO clientDTO)
+    [HttpPut("{customerId}")]
+    public ActionResult<ClientDAO> UpdateClient(Guid customerId, [FromBody] ClientDTO clientDTO)
     {
-        ClientDAO? updatedClient = clientService.UpdateClient(clientDTO) ?? null;
+        Client? updatedClient = clientService.UpdateClient(clientDTO with {
+            Id = customerId
+        }) ?? null;
 
         if(updatedClient == null)
         {
             return NotFound($"No client found using the following data: {clientDTO}");
         }
 
-        return Ok(updatedClient);
+        return Ok(updatedClient.ToClientDAO());
     }
 }
