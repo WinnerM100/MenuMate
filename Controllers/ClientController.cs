@@ -38,4 +38,31 @@ public class ClientController : ControllerBase
         }
         else return Ok(clientDAO);
     }
+
+    [HttpDelete]
+    public ActionResult<ClientDAO> DeleteClient(ClientDTO clientDTO)
+    {
+        ClientDAO? toBeDeletedClient = clientService.DeleteClient(clientDTO);
+
+        if(toBeDeletedClient == null)
+        {
+            return NotFound($"No client found using the following data: {clientDTO}");
+        }
+
+        return Ok(toBeDeletedClient);
+    }
+
+    [HttpPut]
+    [Route("/{id}")]
+    public ActionResult<ClientDAO> UpdateClient(ClientDTO clientDTO)
+    {
+        ClientDAO? updatedClient = clientService.UpdateClient(clientDTO) ?? null;
+
+        if(updatedClient == null)
+        {
+            return NotFound($"No client found using the following data: {clientDTO}");
+        }
+
+        return Ok(updatedClient);
+    }
 }

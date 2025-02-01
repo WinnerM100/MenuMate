@@ -10,7 +10,7 @@ public static class ClientDTOExtensions
     {
         return new Client
         {
-            Id = (Guid)((dto.Id == null || dto.Id == Guid.Empty || maskClientId)? Guid.NewGuid(): dto.Id),
+            Id = (Guid)(maskClientId?Guid.Empty:((dto.Id == null || dto.Id == Guid.Empty)? Guid.Empty: dto.Id)),
             Name = dto.Name,
             Prenume = dto.Prenume
         };

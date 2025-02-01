@@ -14,7 +14,7 @@ public interface IClientService
 
     public ClientDAO CreateClient(ClientDTO clientDetails);
 
-    public ClientDAO UpdateClient(ClientDTO clientDetails);
+    public ClientDAO? UpdateClient(ClientDTO clientDetails);
 
-    public ClientDAO DeleteClient(ClientDTO clientDetails);
+    public ClientDAO? DeleteClient(ClientDTO clientDetails);
 }

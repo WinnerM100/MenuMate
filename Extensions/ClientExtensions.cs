@@ -11,7 +11,7 @@ public static class ClientExtensions
     {
         return new ClientDTO
         {
-            Id = (Guid)(maskClientId? Guid.NewGuid(): client.Id),
+            Id = maskClientId ? Guid.Empty : client.Id,
             Name = client.Name,
             Prenume = client.Prenume
         };
@@ -21,7 +21,7 @@ public static class ClientExtensions
     {
         return new ClientDAO
         {
-            Id = (Guid)(maskClientId? Guid.NewGuid(): client.Id),
+            Id = maskClientId ? Guid.Empty : client.Id,
             Name = client.Name,
             Prenume = client.Prenume
         };
