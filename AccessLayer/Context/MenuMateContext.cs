@@ -28,5 +28,10 @@ public class MenuMateContext : DbContext
     {
         modelBuilder.Entity<Client>().ToTable("client");
         modelBuilder.Entity<User>().ToTable("user");
+
+        modelBuilder.Entity<Client>()
+                    .HasOne(c => c.User)
+                    .WithOne(u => u.Client)
+                    .HasForeignKey<User>(u => u.ClientId);
     }
 }

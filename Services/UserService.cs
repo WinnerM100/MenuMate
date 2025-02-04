@@ -25,15 +25,16 @@ public class UserService : IUserService
         {
             return null;
         }
+
         User newUser = (userDTO with
         {
             Id = Guid.NewGuid()
         }).ToUser();
+        targetClient.UserId = newUser.Id;
         targetClient.User = newUser;
-
         dbContext.Users.Add(newUser);
 
-        dbContext.SaveChangesAsync();
+        dbContext.SaveChanges();
 
         return newUser;
     }

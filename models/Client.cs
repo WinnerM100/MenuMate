@@ -1,4 +1,5 @@
 
+using System.ComponentModel.DataAnnotations.Schema;
 using MenuMate.Models.DTOs;
 
 namespace MenuMate.Models
@@ -8,7 +9,9 @@ namespace MenuMate.Models
         public Guid Id { get; set; }
         public string Name { get; set; }
         public string Prenume { get; set; }
-
+        public Guid UserId { get; set; }
+        
+        [ForeignKey("UserId")]
         public User? User{ get; set; }
 
         public override string ToString()
