@@ -1,42 +1,74 @@
-using System.Security.Claims;
-using System.Text;
-using MenuMate.DTOs;
+
+
+using MenuMate.Extensions;
 using MenuMate.Models;
+using MenuMate.Models.DAOs;
+using MenuMate.Models.DTOs;
 using MenuMate.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 
-namespace MenuMate.Controllers.Authentication
+namespace MenuMate.Controllers;
+
+[ApiController]
+[Route("[controller]")]
+public class UserController : ControllerBase
 {
-    [ApiController]
-    [Route("/user")]
-    public class UserController : ControllerBase
+    private IUserService userService { get; set;}
+
+    public UserController(IUserService userService)
     {
-        private IUserService userService;
+        this.userService = userService;
+    }
 
-        public UserController(IUserService userService)
+    [HttpPost("{clientId}")]
+    public IActionResult CreateUserForClient(Guid clientId,[FromBody] UserDTO userDetails)
+    {
+        User? createdUser = userService.CreateUserForClient(clientId, userDetails);
+
+        if (createdUser == null)
         {
-            this.userService = userService;
+            return NotFound($"No Client Found for Id:'{clientId}'");
         }
 
-        [HttpPost]
-        [AllowAnonymous]
-        [Route("/signin")]
-        public IActionResult Login([FromBody] UserDTO userDTO)
-        {   
-            try
-            {
-                var loggedUser = userService.LoginUser(userDTO);
+        return Ok(createdUser.ToUserDTO());
+    }
 
-                return String.IsNullOrEmpty(loggedUser)? NotFound(loggedUser):Ok(loggedUser);
-            }
-            catch (Exception ex)
-            {   Console.WriteLine(ex.Message);
-                Console.WriteLine(ex.StackTrace);
-                return BadRequest(userDTO);
-            }
+    [HttpGet]
+    public IActionResult GetUserByUsernameAndPassword([FromQuery]string username, [FromQuery]string password)
+    {
+        UserDAO? foundUser = userService.GetUserByEmailAndPassword(username,password);
+
+        if (foundUser == null)
+        {
+            return NotFound($"No User Found for {{ username: '{username}', password: '{password}' }}");
+        }
+        else return Ok(foundUser);
+
+    }
+
+    [HttpPut]
+    public IActionResult UpdateUser(UserDTO userDTO, [FromQuery]Guid userId)
+    {
+        UserDAO result = userService.UpdateUserById(userDTO, userId);
+
+        if (result == null)
+        {
+            return NotFound($"No User Found with details: {{UserId: {userId}}}");
         }
 
+        return CreatedAtAction(nameof(UpdateUser), result);
+    }
+
+    [HttpDelete]
+    public IActionResult DeleteUser([FromQuery]string username, [FromQuery]string password)
+    {
+        UserDAO result = userService.DeleteUserByEmailAndPassword(username, password);
+
+        if (result == null)
+        {
+            return NotFound($"No User Found with details: {{{result}}}");
+        }
+
+        return CreatedAtAction(nameof(UpdateUser), result);
     }
 }

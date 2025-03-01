@@ -1,26 +1,16 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MenuMate.Models;
 
-public record User
-{   
-    [Key]
-    [Column("Id")]
+public class User
+{
     public Guid Id { get; set; }
+    public Guid? ClientId { get; set; }
     public string Email { get; set; }
-
     public string Password { get; set; }
-    
-    public ICollection<Role> Roles{ get; private set; } = new List<Role>();
+    public Client Client { get; set; }
 
-    public User()
+    public override string ToString()
     {
-        Id = Guid.NewGuid();
-    }
-    public User(IEnumerable<Role> roles)
-    {
-        Id = Guid.NewGuid();
-        Roles = roles.ToList();
+        return $"User[Id='{Id}', Email='{Email}', Password='{Password}']";
     }
 }

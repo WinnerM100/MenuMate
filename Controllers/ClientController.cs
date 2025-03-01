@@ -1,96 +1,76 @@
-using System.Data.SqlClient;
-using MenuMate.DAOs;
-using MenuMate.DTOs;
+
+
+using MenuMate.AccessLayer.Context;
 using MenuMate.Extensions;
 using MenuMate.Models;
+using MenuMate.Models.DAOs;
+using MenuMate.Models.DTOs;
 using MenuMate.Services;
-using MenuMate.Utilities.Sql;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MenuMate.Controllers;
 
 [ApiController]
-[Route("/clients")]
+[Route("[controller]")]
 public class ClientController : ControllerBase
 {
-    SqlConnector _conn;
-    IClientService clientService;
+    private IClientService clientService { get; set;}
 
-    public ClientController(SqlConnector newConn, IClientService newClientService)
+    public ClientController(IClientService clientService)
     {
-        _conn = newConn;
-        clientService = newClientService;
+        this.clientService = clientService;
+    }
+
+    [HttpGet]
+    public ActionResult<IEnumerable<ClientDTO>> GetClients()
+    {   
+        List<Client> allClients = clientService.GetAllClients().ToList();
+
+        if(allClients == null || allClients.Count == 0)
+        {
+            return NoContent();
+        }
+    
+        return Ok(allClients.Select(c => c.ToClientDAO()));
     }
 
     [HttpPost]
-    public ActionResult<ClientDTO> CreateNewClient([FromBody]ClientDAO newClient)
+    public ActionResult<ClientDAO> CreateClient(ClientDTO clientDetails)
     {
-        var result = clientService.AddClient(newClient);
+        ClientDAO clientDAO = clientService.CreateClient(clientDetails);
 
-        return result;
-    }
-
-    [HttpPut]
-    public ActionResult<ClientDTO> UpdateClient([FromBody]ClientDAO clientToUpdate)
-    {
-        var result = clientService.UpdateClient(clientToUpdate);
-
-        return result;
-    }
-
-    [HttpGet]
-    [Route("/{id}")]
-    public ActionResult<ClientDTO> GetClientById(Guid id)
-    {
-        var result = clientService.GetClientById(id);
-
-        return result;
-    }
-
-    [HttpGet]
-    [Route("/search")]
-    public ActionResult<IEnumerable<ClientDTO>> GetClientByNumePrenume([FromQuery(Name = "nume")]string nume="", [FromQuery(Name = "prenume")]string prenume="")
-    {
-        try
+        if (null == clientDAO)
         {
-            var result = clientService.GetClientByNumePrenume(nume, prenume);
-
-            return Ok(result);
+            return BadRequest($"Unable to create client with the following details: {clientDetails}");
         }
-        catch(Exception ex)
-        {
-            return BadRequest($"Exception executing method {nameof(GetClientByNumePrenume)}: {ex.Message}\n{ex.InnerException}");
-        }
+        else return Ok(clientDAO);
     }
 
     [HttpDelete]
-    [Route("/{id}")]
-    public ActionResult<ClientDTO> DeleteClientById(Guid id)
+    public ActionResult<ClientDAO> DeleteClient(ClientDTO clientDTO)
     {
-        var result = clientService.DeleteClientById(id);
+        ClientDAO? toBeDeletedClient = clientService.DeleteClient(clientDTO);
 
-        return result;
+        if(toBeDeletedClient == null)
+        {
+            return NotFound($"No client found using the following data: {clientDTO}");
+        }
+
+        return Ok(toBeDeletedClient);
     }
 
-    [HttpDelete]
-    public ActionResult<IEnumerable<ClientDTO>> DeleteClientByNumePrenume([FromQuery(Name = "nume")]string nume="", [FromQuery(Name = "prenume")]string prenume="")
+    [HttpPut("{customerId}")]
+    public ActionResult<ClientDAO> UpdateClient(Guid customerId, [FromBody] ClientDTO clientDTO)
     {
-        try
-        {
-            var result = clientService.DeleteClientByNumePrenume(nume, prenume);
+        Client? updatedClient = clientService.UpdateClient(clientDTO with {
+            Id = customerId
+        }) ?? null;
 
-            return Ok(result);
-        }
-        catch(Exception ex)
+        if(updatedClient == null)
         {
-            return BadRequest($"Exception executing method {nameof(GetClientByNumePrenume)}: {ex.Message}\n{ex.InnerException}");
+            return NotFound($"No client found using the following data: {clientDTO}");
         }
-    }
 
-    [HttpGet]
-    [Route("/all")]
-    public ActionResult<IEnumerable<ClientDTO>> GetAllClients()
-    {
-        return Ok(clientService.GetAllClients(true));
+        return Ok(updatedClient.ToClientDAO());
     }
 }
