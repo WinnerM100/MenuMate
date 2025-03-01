@@ -67,14 +67,14 @@ public class ClientService : IClientService
         return clients.ToList().Select(ent => ent.c).ToList();
     }
 
-    public Client GetClientById(Guid clientID)
+    public Client? GetClientById(Guid clientID)
     {
         Client targetClient = dbContext.Clients.AsNoTracking().FirstOrDefault(c => c.Id == clientID);
         
         return targetClient ?? null;
     }
 
-    public Client GetClientByDetails(ClientDTO clientDetails)
+    public Client? GetClientByDetails(ClientDTO clientDetails)
     {
         Client targetClient = dbContext.Clients.AsNoTracking().FirstOrDefault(c =>
             (clientDetails.Id == null || clientDetails.Id.Equals(Guid.Empty) || clientDetails.Id == c.Id) &&

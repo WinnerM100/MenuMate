@@ -10,5 +10,5 @@ public interface IUserService
 {
     public User? CreateUserForClient(Guid clientId, UserDTO userDTO);
 
-    public UserDAO GetUserByEmailAndPassword(string email, string password);
+    public UserDAO? GetUserByEmailAndPassword(string email, string password);
 }
