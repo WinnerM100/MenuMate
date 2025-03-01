@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MenuMate.Migrations
 {
     [DbContext(typeof(MenuMateContext))]
-    [Migration("20250201195018_UserContext")]
-    partial class UserContext
+    [Migration("20250301120234_UserContext-MappedClientFK-ForUser")]
+    partial class UserContextMappedClientFKForUser
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -39,6 +39,10 @@ namespace MenuMate.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("UserId")
+                        .IsRequired()
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
                     b.ToTable("client", (string)null);
@@ -50,7 +54,7 @@ namespace MenuMate.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ClientId")
+                    b.Property<Guid?>("ClientId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Email")
@@ -64,7 +68,8 @@ namespace MenuMate.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ClientId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[ClientId] IS NOT NULL");
 
                     b.ToTable("user", (string)null);
                 });
@@ -73,16 +78,15 @@ namespace MenuMate.Migrations
                 {
                     b.HasOne("MenuMate.Models.Client", "Client")
                         .WithOne("User")
-                        .HasForeignKey("MenuMate.Models.User", "ClientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("MenuMate.Models.User", "ClientId");
 
                     b.Navigation("Client");
                 });
 
             modelBuilder.Entity("MenuMate.Models.Client", b =>
                 {
-                    b.Navigation("User");
+                    b.Navigation("User")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

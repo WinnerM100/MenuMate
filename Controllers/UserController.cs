@@ -2,6 +2,7 @@
 
 using MenuMate.Extensions;
 using MenuMate.Models;
+using MenuMate.Models.DAOs;
 using MenuMate.Models.DTOs;
 using MenuMate.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -30,5 +31,18 @@ public class UserController : ControllerBase
         }
 
         return Ok(createdUser.ToUserDTO());
+    }
+
+    [HttpGet]
+    public IActionResult GetUserByUsernameAndPassword([FromQuery]string username, [FromQuery]string password)
+    {
+        UserDAO? foundUser = userService.GetUserByEmailAndPassword(username,password);
+
+        if (foundUser == null)
+        {
+            return NotFound($"No User Found for {{ username: '{username}', password: '{password}' }}");
+        }
+        else return Ok(foundUser);
+
     }
 }

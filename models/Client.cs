@@ -9,14 +9,14 @@ namespace MenuMate.Models
         public Guid Id { get; set; }
         public string Name { get; set; }
         public string Prenume { get; set; }
-        public Guid UserId { get; set; }
+        public Guid? UserId { get; set; }
         
         [ForeignKey("UserId")]
-        public User? User{ get; set; }
+        public User User{ get; set; }
 
         public override string ToString()
         {
-            return $"Client[Id:'{Id}', Name: '{Name}', Prenume: '{Prenume}']";
+            return $"Client[Id:'{Id}', Name: '{Name}', Prenume: '{Prenume}', User:{{{User}}}]";
         }
 
         public override bool Equals(object? obj)

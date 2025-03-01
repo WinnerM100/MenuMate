@@ -22,9 +22,16 @@ public class ClientController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<ClientDAO>> GetClients()
+    public ActionResult<IEnumerable<ClientDTO>> GetClients()
     {   
-        return Ok(clientService.GetAllClients());
+        List<Client> allClients = clientService.GetAllClients().ToList();
+
+        if(allClients == null || allClients.Count == 0)
+        {
+            return NoContent();
+        }
+    
+        return Ok(allClients.Select(c => c.ToClientDAO()));
     }
 
     [HttpPost]

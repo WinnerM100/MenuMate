@@ -3,6 +3,7 @@
 using MenuMate.AccessLayer.Context;
 using MenuMate.Extensions;
 using MenuMate.Models;
+using MenuMate.Models.DAOs;
 using MenuMate.Models.DTOs;
 
 namespace MenuMate.Services;
@@ -37,5 +38,17 @@ public class UserService : IUserService
         dbContext.SaveChanges();
 
         return newUser;
+    }
+
+    public UserDAO? GetUserByEmailAndPassword(string email, string password)
+    {
+        User? targetUser = dbContext.Users.FirstOrDefault(u => u.Email.ToLower().Equals(email.ToLower()) && u.Password.Equals(password));
+
+        if(targetUser == null)
+        {
+            return null;
+        }
+
+        return targetUser.ToUserDAO();
     }
 }

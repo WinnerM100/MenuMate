@@ -20,7 +20,7 @@ public class MenuMateContext : DbContext
     {
         optionsBuilder.UseSqlServer(sqlConnector.DbConnection.ConnectionString);
         optionsBuilder.EnableSensitiveDataLogging();
-        optionsBuilder.LogTo(Console.WriteLine, LogLevel.Information);
+        optionsBuilder.LogTo(Console.WriteLine, LogLevel.Debug);
         base.OnConfiguring(optionsBuilder);
     }
     
@@ -32,6 +32,11 @@ public class MenuMateContext : DbContext
         modelBuilder.Entity<Client>()
                     .HasOne(c => c.User)
                     .WithOne(u => u.Client)
+                    .HasForeignKey<Client>(c => c.UserId);
+                    
+        modelBuilder.Entity<User>()
+                    .HasOne(u => u.Client)
+                    .WithOne(c => c.User)
                     .HasForeignKey<User>(u => u.ClientId);
     }
 }

@@ -12,7 +12,8 @@ public static class ClientDTOExtensions
         {
             Id = (Guid)(maskClientId?Guid.Empty:((dto.Id == null || dto.Id == Guid.Empty)? Guid.Empty: dto.Id)),
             Name = dto.Name,
-            Prenume = dto.Prenume
+            Prenume = dto.Prenume,
+            User = dto.UserDTO.ToUser() ?? null
         };
     }
 }

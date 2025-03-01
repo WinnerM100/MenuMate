@@ -23,7 +23,8 @@ public static class ClientExtensions
         {
             Id = maskClientId ? Guid.Empty : client.Id,
             Name = client.Name,
-            Prenume = client.Prenume
+            Prenume = client.Prenume,
+            UserDAO = client.User?.ToUserDAO()
         };
     }
 }

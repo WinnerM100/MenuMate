@@ -36,7 +36,8 @@ namespace MenuMate.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid?>("UserId")
+                        .IsRequired()
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
@@ -50,7 +51,7 @@ namespace MenuMate.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ClientId")
+                    b.Property<Guid?>("ClientId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Email")
@@ -64,7 +65,8 @@ namespace MenuMate.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ClientId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[ClientId] IS NOT NULL");
 
                     b.ToTable("user", (string)null);
                 });
@@ -73,16 +75,15 @@ namespace MenuMate.Migrations
                 {
                     b.HasOne("MenuMate.Models.Client", "Client")
                         .WithOne("User")
-                        .HasForeignKey("MenuMate.Models.User", "ClientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("MenuMate.Models.User", "ClientId");
 
                     b.Navigation("Client");
                 });
 
             modelBuilder.Entity("MenuMate.Models.Client", b =>
                 {
-                    b.Navigation("User");
+                    b.Navigation("User")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

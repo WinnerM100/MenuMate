@@ -1,5 +1,3 @@
-
-
 using System.Data.Entity;
 using MenuMate.AccessLayer.Context;
 using MenuMate.Extensions;
@@ -18,9 +16,28 @@ public class ClientService : IClientService
     {
         this.dbContext = context;
     }
-    public ClientDAO CreateClient(ClientDTO clientDetails)
+    public ClientDAO? CreateClient(ClientDTO clientDetails)
     {
-        dbContext.Clients.Add(clientDetails.ToClient(false));
+        if(clientDetails.UserDTO is null)
+        {
+            return null;
+        }
+        if(string.IsNullOrEmpty(clientDetails.UserDTO.Email) || string.IsNullOrEmpty(clientDetails.UserDTO.Password))
+        {
+            return null;
+        }
+
+        Client newClient = clientDetails.ToClient();
+
+        newClient.Id = Guid.NewGuid();
+        newClient.User.Email = clientDetails.UserDTO.Email;
+        newClient.User.Password = clientDetails.UserDTO.Password;
+        newClient.User.ClientId = newClient.Id;
+        newClient.User.Client = newClient;
+        newClient.UserId = newClient.User.Id;
+
+        //dbContext.Users.Add(newClient.User);
+        dbContext.Clients.Add(newClient);
 
         dbContext.SaveChanges();
 
@@ -43,8 +60,11 @@ public class ClientService : IClientService
     }
 
     public IEnumerable<Client> GetAllClients()
-    {
-        return dbContext.Clients.Select(c => c).ToList();
+    {   
+        var clients = from c in dbContext.Clients
+                      join u in dbContext.Users on c.Id equals u.ClientId  
+                      select new {c,u};
+        return clients.ToList().Select(ent => ent.c).ToList();
     }
 
     public Client GetClientById(Guid clientID)
