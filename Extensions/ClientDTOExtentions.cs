@@ -7,6 +7,7 @@ namespace MenuMate.Extensions;
 public static class ClientDTOExtensions
 {
     public static Client ToClient (this ClientDTO dto, bool maskClientId = true)
+    
     {
         return new Client
         {

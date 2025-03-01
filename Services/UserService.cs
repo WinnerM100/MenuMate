@@ -5,6 +5,7 @@ using MenuMate.Extensions;
 using MenuMate.Models;
 using MenuMate.Models.DAOs;
 using MenuMate.Models.DTOs;
+using Microsoft.EntityFrameworkCore;
 
 namespace MenuMate.Services;
 
@@ -48,6 +49,38 @@ public class UserService : IUserService
         {
             return null;
         }
+
+        return targetUser.ToUserDAO();
+    }
+
+    public UserDAO? UpdateUserById(UserDTO userDTO, Guid Id)
+    {
+        User targetUser = dbContext.Users.Where(u => u.Id == Id).FirstOrDefault();
+
+        if(targetUser == null)
+        {
+            return null;
+        }
+
+        targetUser.Email = userDTO.Email;
+        targetUser.Password = userDTO.Password;
+
+        dbContext.Users.Update(targetUser);
+        dbContext.SaveChanges();
+
+        return targetUser.ToUserDAO();
+    }
+
+    public UserDAO? DeleteUserByEmailAndPassword(string email, string password)
+    {
+        User targetUser = dbContext.Users.Where(u => u.Email.ToLower().Equals(email.ToLower()) && u.Password.Equals(password)).FirstOrDefault();
+
+        if(targetUser == null)
+        {
+            return null;
+        }
+
+        dbContext.Users.Where(u => u.Email.ToLower().Equals(email.ToLower()) && u.Password.Equals(password)).ExecuteDeleteAsync();
 
         return targetUser.ToUserDAO();
     }

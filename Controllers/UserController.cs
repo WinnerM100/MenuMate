@@ -45,4 +45,30 @@ public class UserController : ControllerBase
         else return Ok(foundUser);
 
     }
+
+    [HttpPut]
+    public IActionResult UpdateUser(UserDTO userDTO, [FromQuery]Guid userId)
+    {
+        UserDAO result = userService.UpdateUserById(userDTO, userId);
+
+        if (result == null)
+        {
+            return NotFound($"No User Found with details: {{UserId: {userId}}}");
+        }
+
+        return CreatedAtAction(nameof(UpdateUser), result);
+    }
+
+    [HttpDelete]
+    public IActionResult DeleteUser([FromQuery]string username, [FromQuery]string password)
+    {
+        UserDAO result = userService.DeleteUserByEmailAndPassword(username, password);
+
+        if (result == null)
+        {
+            return NotFound($"No User Found with details: {{{result}}}");
+        }
+
+        return CreatedAtAction(nameof(UpdateUser), result);
+    }
 }
