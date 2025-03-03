@@ -8,6 +8,7 @@ public class MenuMateContext : DbContext
 {
     public DbSet<Client> Clients{ get; set; }
     public DbSet<User> Users{ get; set; }
+    public DbSet<Role> Roles{ get; set; }
 
     private SqlConnector sqlConnector{ get; set; }
 
@@ -28,6 +29,7 @@ public class MenuMateContext : DbContext
     {
         modelBuilder.Entity<Client>().ToTable("client");
         modelBuilder.Entity<User>().ToTable("user");
+        modelBuilder.Entity<Role>().ToTable("Role");
 
         modelBuilder.Entity<Client>()
                     .HasOne(c => c.User)
@@ -38,5 +40,9 @@ public class MenuMateContext : DbContext
                     .HasOne(u => u.Client)
                     .WithOne(c => c.User)
                     .HasForeignKey<User>(u => u.ClientId);
+
+        modelBuilder.Entity<User>()
+                    .HasMany(u => u.Roles)
+                    .WithMany(r => r.Users);
     }
 }

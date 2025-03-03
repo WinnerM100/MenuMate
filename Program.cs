@@ -26,6 +26,7 @@ public class Program
 
         builder.Services.AddScoped<IClientService, ClientService>();
         builder.Services.AddScoped<IUserService, UserService>();
+        builder.Services.AddScoped<IRoleService, RoleService>();
 
         builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -77,7 +78,10 @@ public class Program
         //                     }
         //                 );
 
+        PopulateRolesFromConfig(builder.Services);
+
         var app = builder.Build();
+
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
@@ -95,5 +99,14 @@ public class Program
         app.MapControllers();
 
         app.Run();
+    }
+
+    public static void PopulateRolesFromConfig(IServiceCollection services)
+    {   
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
+
+        IRoleService roleService = serviceProvider.GetRequiredService<IRoleService>();
+
+        roleService.PopulateRoleTableFromConfig();
     }
 }

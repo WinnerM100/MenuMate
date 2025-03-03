@@ -8,6 +8,7 @@ public class User
     public string Email { get; set; }
     public string Password { get; set; }
     public Client Client { get; set; }
+    public ICollection<Role> Roles { get; } = new List<Role>();
 
     public override string ToString()
     {
