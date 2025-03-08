@@ -23,6 +23,7 @@ public static class UserExtensions
             Id = maskUserId ? Guid.Empty : user.Id,
             Email = user.Email,
             Password = user.Password,
+            Roles = user.Roles.Select(r => r.ToRoleDAO()).ToList(),
         };
     }
 

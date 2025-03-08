@@ -47,4 +47,16 @@ public class RoleService : IRoleService
 
         _dbContext.SaveChanges();
     }
+
+    public Role GetRoleByName(string roleName)
+    {
+        Role targetRole = _dbContext.Roles.FirstOrDefault(r => r.Name.ToUpper().Equals(roleName.ToUpper()));
+
+        if(targetRole == null)
+        {
+            return null;
+        }
+
+        return targetRole;
+    }
 }

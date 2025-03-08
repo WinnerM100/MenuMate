@@ -43,6 +43,7 @@ public class MenuMateContext : DbContext
 
         modelBuilder.Entity<User>()
                     .HasMany(u => u.Roles)
-                    .WithMany(r => r.Users);
+                    .WithMany(r => r.Users)
+                    .UsingEntity("RoleUser");       
     }
 }

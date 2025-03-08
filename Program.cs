@@ -24,9 +24,9 @@ public class Program
 
         builder.Services.AddSingleton<SqlConnector>();
 
+        builder.Services.AddScoped<IRoleService, RoleService>();
         builder.Services.AddScoped<IClientService, ClientService>();
         builder.Services.AddScoped<IUserService, UserService>();
-        builder.Services.AddScoped<IRoleService, RoleService>();
 
         builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

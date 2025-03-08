@@ -1,9 +1,10 @@
-using System.Data.Entity;
 using MenuMate.AccessLayer.Context;
+using MenuMate.Constants.Enums;
 using MenuMate.Extensions;
 using MenuMate.Models;
 using MenuMate.Models.DAOs;
 using MenuMate.Models.DTOs;
+using Microsoft.EntityFrameworkCore;
 
 namespace MenuMate.Services;
 
@@ -12,9 +13,12 @@ public class ClientService : IClientService
 {   
     private MenuMateContext dbContext { get; set; }
 
-    public ClientService(MenuMateContext context)
+    private IRoleService roleService{ get; set; }
+
+    public ClientService(MenuMateContext context, IRoleService roleService)
     {
         this.dbContext = context;
+        this.roleService = roleService;
     }
     public ClientDAO? CreateClient(ClientDTO clientDetails)
     {
@@ -28,6 +32,9 @@ public class ClientService : IClientService
         }
 
         Client newClient = clientDetails.ToClient();
+
+        Role userRole = roleService.GetRoleByName(RoleNameEnum.CLIENT.ToString());
+        newClient.User.Roles.Add(userRole);
 
         newClient.Id = Guid.NewGuid();
         newClient.User.Email = clientDetails.UserDTO.Email;
@@ -61,10 +68,8 @@ public class ClientService : IClientService
 
     public IEnumerable<Client> GetAllClients()
     {   
-        var clients = from c in dbContext.Clients
-                      join u in dbContext.Users on c.Id equals u.ClientId  
-                      select new {c,u};
-        return clients.ToList().Select(ent => ent.c).ToList();
+        var clients = dbContext.Clients.Include(c => c.User).ThenInclude(u => u.Roles).ToList();
+        return clients;
     }
 
     public Client? GetClientById(Guid clientID)
