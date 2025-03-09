@@ -2,6 +2,7 @@ using System.Configuration;
 using System.Text;
 using MenuMate.AccessLayer.Context;
 using MenuMate.AccessLayer.Models;
+using MenuMate.Security.Authentication;
 using MenuMate.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,8 @@ public class Program
 
         builder.Services.AddSingleton<SqlConnector>();
 
+        builder.Services.AddSingleton<IAuthenticator, JwtAuthenticator>();
+        
         builder.Services.AddScoped<IRoleService, RoleService>();
         builder.Services.AddScoped<IClientService, ClientService>();
         builder.Services.AddScoped<IUserService, UserService>();
