@@ -27,6 +27,7 @@ public class Program
         builder.Services.AddScoped<IRoleService, RoleService>();
         builder.Services.AddScoped<IClientService, ClientService>();
         builder.Services.AddScoped<IUserService, UserService>();
+        builder.Services.AddScoped<IAuthService, AuthService>();
 
         builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -61,22 +62,22 @@ public class Program
         );
 
         //authentication
-        // builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-        //                 .AddJwtBearer(
-        //                     options => {
-        //                         options.SaveToken = true;
-        //                         options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-        //                         {
-        //                             ValidateIssuer = true,
-        //                             ValidateAudience = true,
-        //                             ValidateLifetime = true,
-        //                             ValidateIssuerSigningKey = true,
-        //                             ValidIssuer = builder.Configuration.GetSection("Jwt:Issuer").Value,
-        //                             ValidAudience = builder.Configuration.GetSection("Jwt:Audience").Value,
-        //                             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("Jwt:Key").Value))
-        //                         };
-        //                     }
-        //                 );
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                        .AddJwtBearer(
+                            options => {
+                                options.SaveToken = true;
+                                options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                                {
+                                    ValidateIssuer = true,
+                                    ValidateAudience = true,
+                                    ValidateLifetime = true,
+                                    ValidateIssuerSigningKey = true,
+                                    ValidIssuer = builder.Configuration.GetSection("Jwt:Issuer").Value,
+                                    ValidAudience = builder.Configuration.GetSection("Jwt:Audience").Value,
+                                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("Jwt:Key").Value))
+                                };
+                            }
+                        );
 
         PopulateRolesFromConfig(builder.Services);
 
@@ -92,8 +93,8 @@ public class Program
 
         app.UseHttpsRedirection();
 
-        // app.UseAuthentication();
-        // app.UseAuthorization();
+        app.UseAuthentication();
+        app.UseAuthorization();
 
 
         app.MapControllers();
