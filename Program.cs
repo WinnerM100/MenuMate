@@ -1,15 +1,12 @@
-using System.Configuration;
 using System.Text;
 using MenuMate.AccessLayer.Context;
 using MenuMate.AccessLayer.Models;
 using MenuMate.Security.Authentication;
 using MenuMate.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.Annotations;
+using MenuMate.Middleware.Security;
 
 namespace MenuMate;
 
@@ -26,6 +23,7 @@ public class Program
         builder.Services.AddSingleton<SqlConnector>();
 
         builder.Services.AddSingleton<IAuthenticator, JwtAuthenticator>();
+        builder.Services.AddSingleton<MethodAuthorizationCollection>();
         
         builder.Services.AddScoped<IRoleService, RoleService>();
         builder.Services.AddScoped<IClientService, ClientService>();
@@ -63,7 +61,6 @@ public class Program
                 // });
             }
         );
-
         //authentication
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                         .AddJwtBearer(
@@ -86,6 +83,7 @@ public class Program
 
         var app = builder.Build();
 
+        app.UseAuthorizationMiddleware();
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
