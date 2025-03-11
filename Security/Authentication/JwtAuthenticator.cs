@@ -44,12 +44,20 @@ public class JwtAuthenticator : IAuthenticator
     {
         SymmetricSecurityKey authKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecurityKey));
 
+
+        string securityAlgorithm = GetSecurityAlgorithm();
+
+        if(string.IsNullOrEmpty(securityAlgorithm))
+        {
+            throw new ArgumentException($"Invalid algorithm. There is no option available for '{HashAlgorithm}' hashing algorithm.");
+        }
+
         JwtSecurityToken token = new JwtSecurityToken(
             issuer: Issuer,
             audience: Audience,
             expires: DateTime.Now.AddMinutes(ExpiresInMinutes),
             claims: claims,
-            signingCredentials: new SigningCredentials(authKey,GetSecurityAlgorithm())
+            signingCredentials: new SigningCredentials(authKey,securityAlgorithm)
         );
 
         return token;
