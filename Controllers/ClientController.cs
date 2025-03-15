@@ -41,7 +41,7 @@ public class ClientController : ControllerBase
     [HttpPost]
     public ActionResult<ClientDAO> CreateClient(ClientDTO clientDetails)
     {
-        ClientDAO clientDAO = clientService.CreateClient(clientDetails);
+        ClientDAO? clientDAO = clientService.CreateClient(clientDetails);
 
         if (null == clientDAO)
         {
