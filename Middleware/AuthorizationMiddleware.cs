@@ -1,6 +1,8 @@
 
 using MenuMate.Models;
+using MenuMate.Utils;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.Net.Http.Headers;
 
 namespace MenuMate.Middleware.Security;
 
@@ -17,11 +19,23 @@ public class AuthorizationMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
+        bool isUserAuthorized = IsUserAuthorizedForRequest(context);
+
+        if(!isUserAuthorized)
+        {
+            throw new UnauthorizedAccessException("You are not allowed to access this request!");
+        }
+
+        await next(context);
+    }
+
+    public bool IsUserAuthorizedForRequest(HttpContext context)
+    {
         Endpoint endpoint = context.GetEndpoint();
         
         if(endpoint == null)
         {
-            return;
+            return true;
         }
 
         EndpointMetadataCollection metadataColl = endpoint.Metadata;
@@ -31,15 +45,22 @@ public class AuthorizationMiddleware
 
         if(httpMethods == null || httpMethods.Count() == 0)
         {
-            return;
+            return true;
         }
 
         string httpVerb = httpMethods[0];
+        string token = context.Request.Headers[HeaderNames.Authorization];
+
+        string currentUserRole = AuthorizationUtils.GetRoleFromAuthorization(token, Constants.Enums.AuthenticationTypes.JwtAuth);
 
         foreach (MethodAuthorization methodAuthorization in authorizations.methodAuthorizations)
         {
-            if(methodAuthorization.EndpointName == methodCall && methodAuthorization.HttpMethod == httpVerb && methodAuthorization.AllowedRoles.Contains())
+            if(methodAuthorization.EndpointName.Equals(methodCall) && methodAuthorization.HttpMethod.Equals(httpVerb))
+            {
+                return true;
+            }
         }
+        return false;
     }
 }
 

@@ -11,6 +11,9 @@ public class MethodAuthorization
         this.HttpMethod = httpMethod;
         AllowedRoles = allowedRoles;
     }
+    public MethodAuthorization()
+    {
+    }
 
     public string EndpointName { get; set; }
     public string HttpMethod { get; set;}

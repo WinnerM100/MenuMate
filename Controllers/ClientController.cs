@@ -5,11 +5,14 @@ using MenuMate.Extensions;
 using MenuMate.Models;
 using MenuMate.Models.DAOs;
 using MenuMate.Models.DTOs;
+using MenuMate.Security.Authorization.Attributes;
 using MenuMate.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MenuMate.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("[controller]")]
 public class ClientController : ControllerBase
@@ -22,6 +25,7 @@ public class ClientController : ControllerBase
     }
 
     [HttpGet]
+    [HasRole]
     public ActionResult<IEnumerable<ClientDTO>> GetClients()
     {   
         List<Client> allClients = clientService.GetAllClients().ToList();

@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MenuMate.Middleware.Security;
+using Microsoft.AspNetCore.Authorization;
+using MenuMate.Security.Authorization;
 
 namespace MenuMate;
 
@@ -24,6 +26,8 @@ public class Program
 
         builder.Services.AddSingleton<IAuthenticator, JwtAuthenticator>();
         builder.Services.AddSingleton<MethodAuthorizationCollection>();
+        builder.Services.AddSingleton<IAuthorizationHandler, RoleAuthorizationHandler>();
+        builder.Services.AddSingleton<IAuthorizationPolicyProvider, RoleAuthorizationPolicyProvider>();
         
         builder.Services.AddScoped<IRoleService, RoleService>();
         builder.Services.AddScoped<IClientService, ClientService>();
@@ -36,29 +40,29 @@ public class Program
         builder.Services.AddSwaggerGen(
             option => {
                 option.SwaggerDoc("v1", new OpenApiInfo { Title = "MenuMate API", Version = "v1"});
-                // option.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-                // {
-                //     In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-                //     Description = "Please enter a valid token",
-                //     Name = "Authorization",
-                //     Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
-                //     BearerFormat = "JWT",
-                //     Scheme = JwtBearerDefaults.AuthenticationScheme
-                // });
-                // option.AddSecurityRequirement(new OpenApiSecurityRequirement
-                // {
-                //     {
-                //         new OpenApiSecurityScheme
-                //         {
-                //             Reference = new OpenApiReference
-                //             {
-                //                 Type = ReferenceType.SecurityScheme,
-                //                 Id = JwtBearerDefaults.AuthenticationScheme
-                //             }
-                //         },
-                //         new string[]{}
-                //     }
-                // });
+                option.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                {
+                    In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+                    Description = "Please enter a valid token",
+                    Name = "Authorization",
+                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+                    BearerFormat = "JWT",
+                    Scheme = JwtBearerDefaults.AuthenticationScheme
+                });
+                option.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = JwtBearerDefaults.AuthenticationScheme
+                            }
+                        },
+                        new string[]{}
+                    }
+                });
             }
         );
         //authentication
@@ -80,10 +84,9 @@ public class Program
                         );
 
         PopulateRolesFromConfig(builder.Services);
-
         var app = builder.Build();
 
-        app.UseAuthorizationMiddleware();
+        //app.UseAuthorizationMiddleware();
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
