@@ -41,16 +41,16 @@ public class UserService : IUserService
         return newUser;
     }
 
-    public UserDAO? GetUserByEmailAndPassword(string email, string password)
+    public User? GetUserByEmailAndPassword(string email, string password)
     {
-        User? targetUser = dbContext.Users.FirstOrDefault(u => u.Email.ToLower().Equals(email.ToLower()) && u.Password.Equals(password));
+        User? targetUser = dbContext.Users.Include(u => u.Roles).FirstOrDefault(u => u.Email.ToLower().Equals(email.ToLower()) && u.Password.Equals(password));
 
         if(targetUser == null)
         {
             return null;
         }
 
-        return targetUser.ToUserDAO();
+        return targetUser;
     }
 
     public UserDAO? UpdateUserById(UserDTO userDTO, Guid Id)

@@ -36,13 +36,13 @@ public class UserController : ControllerBase
     [HttpGet]
     public IActionResult GetUserByUsernameAndPassword([FromQuery]string username, [FromQuery]string password)
     {
-        UserDAO? foundUser = userService.GetUserByEmailAndPassword(username,password);
+        User? foundUser = userService.GetUserByEmailAndPassword(username,password);
 
         if (foundUser == null)
         {
             return NotFound($"No User Found for {{ username: '{username}', password: '{password}' }}");
         }
-        else return Ok(foundUser);
+        else return Ok(foundUser.ToUserDAO());
 
     }
 
