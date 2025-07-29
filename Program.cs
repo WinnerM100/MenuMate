@@ -9,6 +9,8 @@ using Microsoft.OpenApi.Models;
 using MenuMate.Middleware.Security;
 using Microsoft.AspNetCore.Authorization;
 using MenuMate.Security.Authorization;
+using MenuMate.Models;
+using MenuMate.Configuration.HttpClientConfig;
 
 namespace MenuMate;
 
@@ -28,18 +30,21 @@ public class Program
         builder.Services.AddSingleton<MethodAuthorizationCollection>();
         builder.Services.AddSingleton<IAuthorizationHandler, RoleAuthorizationHandler>();
         builder.Services.AddSingleton<IAuthorizationPolicyProvider, RoleAuthorizationPolicyProvider>();
-        
+
         builder.Services.AddScoped<IRoleService, RoleService>();
         builder.Services.AddScoped<IClientService, ClientService>();
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<IAuthService, AuthService>();
 
+
+
         builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(
-            option => {
-                option.SwaggerDoc("v1", new OpenApiInfo { Title = "MenuMate API", Version = "v1"});
+            option =>
+            {
+                option.SwaggerDoc("v1", new OpenApiInfo { Title = "MenuMate API", Version = "v1" });
                 option.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
                 {
                     In = Microsoft.OpenApi.Models.ParameterLocation.Header,
@@ -68,7 +73,8 @@ public class Program
         //authentication
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                         .AddJwtBearer(
-                            options => {
+                            options =>
+                            {
                                 options.SaveToken = true;
                                 options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
                                 {
@@ -107,11 +113,23 @@ public class Program
     }
 
     public static void PopulateRolesFromConfig(IServiceCollection services)
-    {   
+    {
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         IRoleService roleService = serviceProvider.GetRequiredService<IRoleService>();
 
         roleService.PopulateRoleTableFromConfig();
+    }
+
+    public static WebApplicationBuilder RegisterHttpClients(WebApplicationBuilder builder)
+    {
+        List<HttpClientSettings> httpClients = new List<HttpClientSettings>();
+
+        foreach (var httpConfig in builder.Configuration.GetSection("RemoteServices").GetChildren())
+        {
+            httpClients.Add(new HttpClientSettings(httpConfig));
+        }
+        
+        return builder;
     }
 }

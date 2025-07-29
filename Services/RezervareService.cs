@@ -7,8 +7,8 @@ namespace MenuMate.Services;
 public class RezervareService : IRezervareService
 {
     private MenuMateContext dbContext { get; set; }
-    public RezervareDAO? CreateRezervareForClient(ClientDTO clientDTO)
+    public ConfirmareRezervare? CreateRezervareForClient(ClientDTO clientDTO)
     {
-        
+        return new ConfirmareRezervare();
     }
 }
