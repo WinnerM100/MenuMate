@@ -1,11 +1,8 @@
 
-namespace MenuMate.Models.DAOs;
-public class RezervareDAO
+
+namespace MenuMate.Models;
+public class RezervareRequest
 {
-    public Guid Id { get; init; }
-
-    public Guid ClientId { get; init; }
-
     public string NrTelefon { get; set; }
 
     public string NrPersoane { get; set; }

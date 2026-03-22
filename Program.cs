@@ -11,6 +11,9 @@ using Microsoft.AspNetCore.Authorization;
 using MenuMate.Security.Authorization;
 using MenuMate.Models;
 using MenuMate.Configuration.HttpClientConfig;
+using Microsoft.Extensions.DependencyInjection;
+using Polly;
+using Polly.Extensions.Http;
 
 namespace MenuMate;
 
@@ -19,9 +22,10 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        builder.Logging.AddConsole().SetMinimumLevel(LogLevel.Debug);
 
         // Add services to the container.
-
+        builder.WebHost.UseUrls("https://localhost:7009");
         builder.Services.AddDbContext<MenuMateContext>();
 
         builder.Services.AddSingleton<SqlConnector>();
@@ -35,10 +39,23 @@ public class Program
         builder.Services.AddScoped<IClientService, ClientService>();
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<IAuthService, AuthService>();
+        builder.Services.AddScoped<IRezervareService, RezervareService>();
+        
+        builder.Services.AddHttpLogging(
+            options =>
+            {
+                options.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.All;
+            }
+        );
 
+        builder = RegisterHttpClients(builder);
 
-
-        builder.Services.AddControllers();
+        builder.Services.AddControllers().AddJsonOptions(
+            options =>
+            {
+                options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+            }
+        );
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(
@@ -105,7 +122,7 @@ public class Program
 
         app.UseAuthentication();
         app.UseAuthorization();
-
+        app.UseHttpLogging();
 
         app.MapControllers();
 
@@ -120,7 +137,14 @@ public class Program
 
         roleService.PopulateRoleTableFromConfig();
     }
-
+    private static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy(int retryAttempts = 1)
+    {
+        return HttpPolicyExtensions
+            .HandleTransientHttpError()
+            .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.NotFound)
+            .WaitAndRetryAsync(retryAttempts, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2,
+                                                                        retryAttempt)));
+    }
     public static WebApplicationBuilder RegisterHttpClients(WebApplicationBuilder builder)
     {
         List<HttpClientSettings> httpClients = new List<HttpClientSettings>();
@@ -128,6 +152,29 @@ public class Program
         foreach (var httpConfig in builder.Configuration.GetSection("RemoteServices").GetChildren())
         {
             httpClients.Add(new HttpClientSettings(httpConfig));
+        }
+
+        foreach (HttpClientSettings httpClientSettings in httpClients)
+        {
+            IHttpClientBuilder httpClientBuilder = builder.Services.AddHttpClient(
+                httpClientSettings.ServiceName,
+                (serviceProvider, client) =>
+                {
+                    client.BaseAddress = new Uri(httpClientSettings.BaseURL);
+                }
+            ).ConfigurePrimaryHttpMessageHandler(
+                () =>
+                {
+                    return new SocketsHttpHandler()
+                    {
+                        PooledConnectionLifetime = HttpOptions.ConvertToTimeSpan(httpClientSettings.HttpOptions.Timeout),
+                    };
+                }
+            );
+            // if (httpClientSettings.HttpOptions.Retries > 0)
+            // {
+            //     httpClientBuilder.AddPolicyHandler(GetRetryPolicy(httpClientSettings.HttpOptions.Retries));
+            // }
         }
         
         return builder;

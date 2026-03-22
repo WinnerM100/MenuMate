@@ -4,6 +4,7 @@ using MenuMate.Middleware.Security;
 using MenuMate.Models;
 using MenuMate.Utils;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Net.Http.Headers;
 

@@ -1,7 +1,8 @@
+using MenuMate.Models;
 using MenuMate.Models.DAOs;
 using MenuMate.Models.DTOs;
 
 public interface IRezervareService
 {
-    public ConfirmareRezervare? CreateRezervareForClient(ClientDTO clientDTO);
+    public Task<RezervareResponse?> CreateRezervareForClient(RezervareDetails rezervareDetails);
 }

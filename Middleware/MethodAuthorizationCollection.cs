@@ -1,6 +1,7 @@
 
 
 using MenuMate.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace MenuMate.Middleware.Security;
 

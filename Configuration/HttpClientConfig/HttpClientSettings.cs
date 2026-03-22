@@ -1,4 +1,6 @@
 
+using Microsoft.Extensions.Configuration;
+
 namespace MenuMate.Configuration.HttpClientConfig;
 
 public class HttpClientSettings
@@ -12,9 +14,8 @@ public class HttpClientSettings
     {
         ServiceName = configurationSection.Key;
 
-        IConfigurationSection serviceSection = configurationSection.GetSection("ServiceName");
-        BaseURL = serviceSection.GetSection("BaseURL").Value ?? "";
+        BaseURL = configurationSection.GetSection("BaseURL").Value ?? "";
         
-        HttpOptions = serviceSection.GetSection("HttpOptions")?.Get<HttpOptions>() ?? new HttpOptions("5m", 0);
+        HttpOptions = configurationSection.GetSection("HttpOptions")?.Get<HttpOptions>() ?? new HttpOptions("5m", 0);
     }
 }
