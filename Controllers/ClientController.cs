@@ -39,6 +39,7 @@ public class ClientController : ControllerBase
     }
 
     [HttpPost]
+    [HasRole]
     public ActionResult<ClientDAO> CreateClient(ClientDTO clientDetails)
     {
         ClientDAO? clientDAO = clientService.CreateClient(clientDetails);
@@ -51,6 +52,7 @@ public class ClientController : ControllerBase
     }
 
     [HttpDelete]
+    [HasRole]
     public ActionResult<ClientDAO> DeleteClient(ClientDTO clientDTO)
     {
         ClientDAO? toBeDeletedClient = clientService.DeleteClient(clientDTO);

@@ -3,6 +3,7 @@
 using MenuMate.AccessLayer.Context;
 using MenuMate.Models;
 using MenuMate.Models.DTOs;
+using Microsoft.Extensions.Configuration;
 
 public class RoleService : IRoleService
 {

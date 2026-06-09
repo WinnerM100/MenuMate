@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using MenuMate.Models;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 namespace MenuMate.Security.Authentication;
@@ -29,6 +30,7 @@ public class JwtAuthenticator : IAuthenticator
         List<Claim> userClaims = new List<Claim>
         {
             new Claim(ClaimTypes.Name,user.Email),
+            new Claim(ClaimTypes.UserData,(user.ClientId == null || user.ClientId == Guid.Empty?Guid.Empty:user.ClientId).ToString()),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
@@ -39,7 +41,6 @@ public class JwtAuthenticator : IAuthenticator
 
         return GenerateToken(userClaims);
     }
-
     private JwtSecurityToken GenerateToken(List<Claim> claims)
     {
         SymmetricSecurityKey authKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecurityKey));

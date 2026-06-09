@@ -1,6 +1,7 @@
 using MenuMate.AccessLayer.Models;
 using MenuMate.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace MenuMate.AccessLayer.Context;
 
