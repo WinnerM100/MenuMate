@@ -41,6 +41,8 @@ public class Program
         builder.Services.AddScoped<IAuthService, AuthService>();
         builder.Services.AddScoped<IRezervareService, RezervareService>();
         
+        builder.Services.AddSingleton<IConfigService, ConfigService>();
+
         builder.Services.AddHttpLogging(
             options =>
             {
